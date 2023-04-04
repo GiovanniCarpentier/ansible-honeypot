@@ -1,0 +1,70 @@
+---
+# Configure GIT, HTTPS, Apache
+
+- name: Create directory ~/code/honeypot
+  file:
+    path: "{{source_folder}}"
+    state: directory
+  
+- name: Clone GIT repo into code directory
+  git:
+    repo: "{{git_repo}}"
+    key_file: "{{key_file}}"
+    dest: "{{source_folder}}"
+    clone: yes
+    update: yes
+    accept_hostkey: yes
+
+- name: Create symlink in /var/www to new dir
+  file:
+    src: "{{source_folder}}"
+    dest: "{{dest_folder}}"
+    state: link
+
+- name: Create directory /etc/ssl/localcerts
+  file:
+    path: /etc/ssl/localcerts
+    state: directory 
+    mode: 0775
+
+- name: Generate SSL keys
+  openssl_privatekey:
+    path: /etc/ssl/localcerts/honeypot.key
+    size: 2048 
+
+- openssl_csr:
+    path: /etc/ssl/localcerts/honeypot.csr
+    privatekey_path: /etc/ssl/localcerts/honeypot.key
+
+- openssl_certificate:
+    provider: selfsigned
+    path: /etc/ssl/localcerts/honeypot.crt
+    privatekey_path: /etc/ssl/localcerts/honeypot.key
+    csr_path: /etc/ssl/localcerts/honeypot.csr
+ 
+- name: Set up HTTP virtualHost
+  template:
+    src: "files/http.conf.j2"
+    dest: "/etc/apache2/sites-available/{{ http_conf }}"
+
+- name: Set up HTTPS virtuahHost
+  template:
+    src: "files/https.conf.j2"
+    dest: "/etc/apache2/sites-available/{{ https_conf }}"
+
+- name: Enable mod SSL
+  shell: /usr/sbin/a2enmod ssl
+  notify: Restart Apache
+
+- name: Enable new site
+  shell: /usr/sbin/a2ensite {{ http_conf }}
+  notify: Reload Apache
+
+- name: Enable new site
+  shell: /usr/sbin/a2ensite {{ https_conf }}
+  notify: Reload Apache
+
+- name: Disable default Apache site
+  shell: /usr/sbin/a2dissite 000-default.conf
+  #when: disable_default
+  notify: Reload Apache

@@ -1,0 +1,9 @@
+---
+# Variables for config
+
+source_folder: "/home/killerb/code/honeypot"
+dest_folder: "/var/www/honeypot"
+git_repo: "ssh://git@git.ti.howest.be:TI/2021-2022/s3/web-security/projects/project-18/honeypot.git"
+key_file: "/home/killerb/.ssh/id_ed25519"
+http_conf: "honeypot.conf"
+https_conf: "honeypotSSL.conf"

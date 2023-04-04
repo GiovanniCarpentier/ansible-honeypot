@@ -1,0 +1,22 @@
+---
+
+- name: Setup Honeypot
+  hosts: honeypot
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    - include_tasks: tasks/install.yml
+    - include_tasks: tasks/config.yml
+  
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted

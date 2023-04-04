@@ -1,0 +1,22 @@
+---
+# Install GIT, Apache, PHP & Mysql
+
+- name: Update all packages to their latest version
+  apt:
+    name: "*"
+    state: latest
+
+- name: Install GIT
+  yum:
+    name: git
+    state: present
+
+- name: Install Apache
+  apt: "name=apache2 update_cache=yes state=latest"
+  
+- name: Install PHP
+  apt: "name=php update_cache=yes state=latest"
+
+- name: Install MYSQL
+  apt: "name=mariadb-server update_cache=yes state=latest"
+
